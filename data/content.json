@@ -1,0 +1,55 @@
+{
+    "portfolioData": {
+        "projects": [
+            {
+                "title": "KRISHAK: Agri AI",
+                "medium": "Hackathon Winner",
+                "description": "First SMS-based AI advisory system in India for feature phones. 3-second response latency.",
+                "span": "col-span-1 md:col-span-2 row-span-1 md:row-span-2"
+            },
+            {
+                "title": "Multi-Agent RAG",
+                "medium": "NLP & Search",
+                "description": "LangChain and FAISS for high-precision retrieval. Reduced query resolution time by 30%.",
+                "span": "col-span-1 md:col-span-1 row-span-1 md:row-span-1"
+            },
+            {
+                "title": "AutoML Agent",
+                "medium": "MLOps & Meta-Learning",
+                "description": "Automated architecture orchestration. Explores 50 neural structures in just 3 minutes.",
+                "span": "col-span-1 md:col-span-1 row-span-1 md:row-span-2"
+            },
+            {
+                "title": "DocuGen",
+                "medium": "Backend Systems",
+                "description": "FastAPI semantic backend automating codebase documentation. 70% database cost reduction.",
+                "span": "col-span-1 md:col-span-1 row-span-1 md:row-span-1"
+            },
+            {
+                "title": "Secure Banking",
+                "medium": "Backend Architecture",
+                "description": "Robust logic utilizing C++/Python for highly secure financial workflow integration.",
+                "span": "col-span-1 md:col-span-3 row-span-1 md:row-span-1"
+            }
+        ],
+        "stats": {
+            "activeDays": "283",
+            "contributions": "911",
+            "questions": "1200+"
+        },
+        "bio": {
+            "heroTitle": "The Architect of Impact",
+            "heroSubtitle": "Building Generative AI solutions that bridge the digital divide. Specialized in RAG, Low-Resource NLP, and Enterprise Analytics.",
+            "aboutText": [
+                "In the realm where data meets architecture, I build solutions that prioritize real-world impact over complex novelty. Currently focused on creating robust backend systems and Gen AI accessible on low-resource hardware.",
+                "A 9.1 CGPA Data Science student whose foundation lies in relentless problem solving—with over 1200 challenges conquered across competitive logic platforms.",
+                "Whether it is dropping agricultural advisory latency to 3 seconds for Indian farmers or accelerating semantic retrieval for enterprise clients, my engineering philosophy remains the same: High Precision, Low Overhead."
+            ]
+        },
+        "socialLinks": {
+            "github": "https://github.com/Arkaprabha13",
+            "linkedin": "https://linkedin.com/in/arkaprabha-banerjee-936b29253",
+            "email": "arkaofficial13@gmail.com"
+        }
+    }
+}
