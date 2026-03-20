@@ -38,6 +38,24 @@ const experiments = [
     description: "Robust logic utilizing C++/Python for highly secure financial workflow integration.",
     span: "col-span-1 md:col-span-3 row-span-1 md:row-span-1",
   },
+  {
+    title: "Blog Empire",
+    medium: "LangGraph · Multi-Agent Pipeline",
+    description: "Autonomous AI blogging platform — Scout→Writer→Revisor→Publisher pipeline. Real-time news from 3 APIs, self-healing SEO, Telegram bot control, auto-publishes to Dev.to & Hashnode.",
+    span: "col-span-1 md:col-span-2 row-span-1 md:row-span-2",
+  },
+  {
+    title: "EVA",
+    medium: "AI Email Intelligence",
+    description: "LangGraph agents for automated email classification, summarization & draft generation. 92% accuracy. OAuth 2.0, Fernet encryption, JWT sessions. Human-in-the-loop review workflow. 4.8/5 satisfaction.",
+    span: "col-span-1 md:col-span-1 row-span-1 md:row-span-2",
+  },
+  {
+    title: "AgentX (Euron)",
+    medium: "Legal Intelligence · Production",
+    description: "Multi-agent legal backend — contract review, risk analysis, compliance checking & redlining. Supabase/Postgres persistence, full auth integration, comprehensive test suite.",
+    span: "col-span-1 md:col-span-1 row-span-1 md:row-span-2",
+  },
 ]
 
 export function WorkSection() {
@@ -113,6 +131,28 @@ export function WorkSection() {
   )
 }
 
+// Per-card entrance animation config
+function getEntranceStyle(title: string, entered: boolean): React.CSSProperties {
+  const base: React.CSSProperties = {
+    transition: "opacity 0.6s ease-out, transform 0.6s ease-out",
+  }
+  const t = title.toLowerCase()
+  if (t.includes("krishak")) {
+    return { ...base, opacity: entered ? 1 : 0, transform: entered ? "translateX(0)" : "translateX(-48px)" }
+  }
+  if (t.includes("eva")) {
+    return { ...base, opacity: entered ? 1 : 0, transform: entered ? "scale(1)" : "scale(0.97)", transitionDuration: "0.7s" }
+  }
+  if (t.includes("blog empire")) {
+    return { ...base, opacity: entered ? 1 : 0, transform: entered ? "translateX(0)" : "translateX(48px)" }
+  }
+  if (t.includes("agentx")) {
+    return { ...base, opacity: entered ? 1 : 0, transform: entered ? "translateY(0)" : "translateY(32px)" }
+  }
+  // generic fade-up
+  return { ...base, opacity: entered ? 1 : 0, transform: entered ? "translateY(0)" : "translateY(20px)" }
+}
+
 function WorkCard({
   experiment,
   index,
@@ -130,10 +170,23 @@ function WorkCard({
   const [isHovered, setIsHovered] = useState(false)
   const cardRef = useRef<HTMLElement>(null)
   const [isScrollActive, setIsScrollActive] = useState(false)
+  const [entered, setEntered] = useState(false)
 
+  // Scroll entrance animation (IntersectionObserver)
+  useEffect(() => {
+    const el = cardRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setEntered(true); obs.disconnect() } },
+      { threshold: 0.15 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  // persistHover (legacy GSAP scroll active)
   useEffect(() => {
     if (!persistHover || !cardRef.current) return
-
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
         trigger: cardRef.current,
@@ -141,7 +194,6 @@ function WorkCard({
         onEnter: () => setIsScrollActive(true),
       })
     }, cardRef)
-
     return () => ctx.revert()
   }, [persistHover])
 
@@ -150,6 +202,7 @@ function WorkCard({
   return (
     <article
       ref={cardRef}
+      style={getEntranceStyle(experiment.title, entered)}
       className={cn(
         "group relative border border-border/40 p-5 flex flex-col justify-between transition-all duration-500 cursor-pointer overflow-hidden",
         experiment.span,
