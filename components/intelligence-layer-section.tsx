@@ -125,10 +125,22 @@ function FloatingTerminal({
   onMaximize: () => void
   onRestore: () => void
 }) {
+  const clamp = (val: number, min: number, max: number) => Math.min(max, Math.max(min, val))
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+  }, [])
+
+  const [viewport, setViewport] = useState({ w: 0, h: 0 })
+
+  useEffect(() => {
+    const syncViewport = () => {
+      setViewport({ w: window.innerWidth, h: window.innerHeight })
+    }
+    syncViewport()
+    window.addEventListener("resize", syncViewport)
+    return () => window.removeEventListener("resize", syncViewport)
   }, [])
 
   const [lines, setLines] = useState<TerminalLine[]>([])
@@ -148,6 +160,25 @@ function FloatingTerminal({
   const [size, setSize] = useState({ w: 680, h: 480 })
   const [resizing, setResizing] = useState(false)
   const resizeStart = useRef({ mx: 0, my: 0, ow: 0, oh: 0 })
+
+  const hasViewport = viewport.w > 0 && viewport.h > 0
+  const mobileLike = hasViewport && viewport.w < 768
+  const tabletLike = hasViewport && viewport.w >= 768 && viewport.w < 1024
+  const canDrag = !mobileLike
+  const canResize = !mobileLike && !tabletLike
+
+  const minW = mobileLike ? 260 : 320
+  const minH = mobileLike ? 260 : 240
+  const edgeMargin = mobileLike ? 8 : 20
+  const maxOpenW = hasViewport ? Math.max(minW, viewport.w - edgeMargin * 2) : size.w
+  const maxOpenH = hasViewport ? Math.max(minH, viewport.h - (mobileLike ? 90 : 70)) : size.h
+  const effectiveW = Math.min(size.w, maxOpenW)
+  const effectiveH = Math.min(size.h, maxOpenH)
+
+  const maxOffsetX = hasViewport ? Math.max(0, (viewport.w - effectiveW) / 2 - edgeMargin) : 0
+  const maxOffsetY = hasViewport ? Math.max(0, (viewport.h - effectiveH) / 2 - edgeMargin) : 0
+  const clampedPosX = clamp(pos.x, -maxOffsetX, maxOffsetX)
+  const clampedPosY = clamp(pos.y, -maxOffsetY, maxOffsetY)
 
   const scrollToBottom = useCallback(() => {
     const el = outputRef.current
@@ -264,11 +295,11 @@ function FloatingTerminal({
 
   // Drag handlers (disabled when maximized)
   const onMouseDown = useCallback((e: React.MouseEvent) => {
-    if (winState === "maximized") return
+    if (winState === "maximized" || !canDrag) return
     e.preventDefault()
     setDragging(true)
     dragStart.current = { mx: e.clientX, my: e.clientY, ox: pos.x, oy: pos.y }
-  }, [pos, winState])
+  }, [canDrag, pos, winState])
 
   useEffect(() => {
     if (!dragging) return
@@ -291,8 +322,8 @@ function FloatingTerminal({
     if (!resizing) return
     const onMove = (e: MouseEvent) => {
       setSize({
-        w: Math.max(300, resizeStart.current.ow + e.clientX - resizeStart.current.mx),
-        h: Math.max(200, resizeStart.current.oh + e.clientY - resizeStart.current.my),
+        w: Math.min(maxOpenW, Math.max(minW, resizeStart.current.ow + e.clientX - resizeStart.current.mx)),
+        h: Math.min(maxOpenH, Math.max(minH, resizeStart.current.oh + e.clientY - resizeStart.current.my)),
       })
     }
     const onUp = () => setResizing(false)
@@ -302,7 +333,7 @@ function FloatingTerminal({
       window.removeEventListener("mousemove", onMove)
       window.removeEventListener("mouseup", onUp)
     }
-  }, [resizing])
+  }, [maxOpenH, maxOpenW, minH, minW, resizing])
 
   // Only render on client to safely use document.body for portal
   if (!mounted) return null
@@ -316,11 +347,11 @@ function FloatingTerminal({
     open: {
       opacity: 1,
       scale: 1,
-      top: `calc(50vh - ${size.h / 2}px + ${pos.y}px)`,
-      left: `calc(50vw - ${size.w / 2}px + ${pos.x}px)`,
-      width: size.w,
-      height: size.h,
-      borderRadius: 12,
+      top: `calc(50vh - ${effectiveH / 2}px + ${clampedPosY}px)`,
+      left: `calc(50vw - ${effectiveW / 2}px + ${clampedPosX}px)`,
+      width: effectiveW,
+      height: effectiveH,
+      borderRadius: mobileLike ? 10 : 12,
       pointerEvents: "auto" as const,
       boxShadow: "0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px #c8963e12, 0 0 60px #c8963e0a",
     },
@@ -381,7 +412,7 @@ function FloatingTerminal({
               display: "flex",
               alignItems: "center",
               gap: "8px",
-              cursor: isMaximized ? "default" : dragging ? "grabbing" : "grab",
+              cursor: isMaximized || !canDrag ? "default" : dragging ? "grabbing" : "grab",
               flexShrink: 0,
               height: 44,
             }}
@@ -600,7 +631,7 @@ function FloatingTerminal({
                 )}
 
                 {/* Resize Handle */}
-                {!isMaximized && (
+                {!isMaximized && canResize && (
                   <div
                     onMouseDown={(e) => {
                       e.preventDefault()
